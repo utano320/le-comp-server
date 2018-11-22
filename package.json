@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "nodemon -e .js --exec babel-node app.js"
+    "dev": "nodemon -e .js --exec babel-node app.js",
+    "start": "pm2 start npm --name=\"le-comp-server\" -- run dev"
   },
   "dependencies": {
     "express": "^4.16.4"
