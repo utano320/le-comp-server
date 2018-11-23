@@ -24,11 +24,60 @@ app.use(corser.create());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// ユーザーリスト
 app.get("/users", async (req, res) => {
-  let rows = await con.query("select id, name from wd_x_sf");
+  let rows = await con.query("select id, name from wd_x_sf order by id");
 
   res.send(JSON.stringify(rows));
 });
+
+// 比較（平均2乗誤差）
+app.get("/comp_rmse", async (req, res) => {
+  let first = await con.query(
+    "select * from wd_x_sf where id = ?",
+    req.query.first
+  );
+  let second = await con.query(
+    "select * from wd_x_sf where id = ?",
+    req.query.second
+  );
+
+  let rmse = -1;
+  if (first.length === 1 || second.length === 1) {
+    rmse = calcRmse(first[0], second[0]);
+  }
+
+  res.send(JSON.stringify({ rmse: rmse }));
+});
+
+function calcRmse(first, second) {
+  let result = -1;
+  let firstSf = [];
+  let secondSf = [];
+
+  // 資質を配列化して準備
+  for (let i = 0; i < 34; i++) {
+    let field = "sf_" + ("00" + (i + 1)).slice(-2);
+    if (first[field] === "" || second[field] === "") break;
+
+    firstSf[i] = first[field];
+    secondSf[i] = second[field];
+  }
+
+  // 資質が2人とも34揃ってたら計算する
+  if (firstSf.length === 34) {
+    let e = 0;
+    for (let i = 0; i < 34; i++) {
+      let element = firstSf[i];
+      let j = secondSf.indexOf(element);
+      console.log([element, i, j]);
+      e += Math.pow(i - j, 2);
+    }
+    result = parseFloat(Math.sqrt(e / 34).toFixed(1));
+  }
+
+  return result;
+}
 
 // process.env.LISTEN_PORT番ポートで待機
 app.listen(process.env.LISTEN_PORT, () =>
