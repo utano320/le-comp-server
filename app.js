@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.get("/users", async (req, res) => {
-  let rows = await con.query("select * from wd_x_sf");
+  let rows = await con.query("select id, name from wd_x_sf");
 
   res.send(JSON.stringify(rows));
 });
