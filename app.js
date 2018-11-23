@@ -33,21 +33,27 @@ app.get("/users", async (req, res) => {
 
 // 比較（平均2乗誤差）
 app.get("/comp_rmse", async (req, res) => {
+  // 1人目のデータを取得
   let first = await con.query(
     "select * from wd_x_sf where id = ?",
     req.query.first
   );
-  let second = await con.query(
-    "select * from wd_x_sf where id = ?",
-    req.query.second
+
+  // 自分を除いたデータを取得
+  let records = await con.query(
+    "select * from wd_x_sf where id != ?",
+    req.query.first
   );
 
-  let rmse = -1;
-  if (first.length === 1 || second.length === 1) {
-    rmse = calcRmse(first[0], second[0]);
+  let rmseList = [];
+  if (first.length === 1 && records.length > 0) {
+    // 結果を計算
+    for (let i = 0; i < records.length; i++) {
+      rmseList[i] = calcRmse(first[0], records[i]);
+    }
   }
 
-  res.send(JSON.stringify({ rmse: rmse }));
+  res.send(JSON.stringify({ rmseList: rmseList }));
 });
 
 function calcRmse(first, second) {
@@ -76,7 +82,7 @@ function calcRmse(first, second) {
     result = parseFloat(Math.sqrt(e / 34).toFixed(1));
   }
 
-  return result;
+  return [second["name"], result];
 }
 
 // process.env.LISTEN_PORT番ポートで待機
