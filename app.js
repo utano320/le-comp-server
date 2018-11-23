@@ -26,6 +26,12 @@ app.use(bodyParser.json());
 
 // ユーザーリスト
 app.get("/users", async (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+
   let rows = await con.query("select id, name from wd_x_sf order by id");
 
   res.send(JSON.stringify(rows));
@@ -33,6 +39,12 @@ app.get("/users", async (req, res) => {
 
 // 比較（平均2乗誤差）
 app.get("/comp_rmse", async (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+
   // 1人目のデータを取得
   let first = await con.query(
     "select * from wd_x_sf where id = ?",
