@@ -61,8 +61,15 @@ app.get("/comp_rmse", async (req, res) => {
   if (first.length === 1 && records.length > 0) {
     // 結果を計算
     for (let i = 0; i < records.length; i++) {
-      rmseList[i] = calcRmse(first[0], records[i]);
+      let rmse = calcRmse(first[0], records[i]);
+      if (rmse[1] !== -1) rmseList.push(rmse);
     }
+
+    rmseList.sort((a, b) => {
+      if (a[1] < b[1]) return -1;
+      if (a[1] > b[1]) return 1;
+      return 0;
+    });
   }
 
   res.send(JSON.stringify({ rmseList: rmseList }));
