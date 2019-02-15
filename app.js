@@ -8,14 +8,33 @@ import moment from "moment";
 import util from "util";
 
 dotenv.config();
-const con = mysql.createConnection(dbConfig);
-con.query = util.promisify(con.query);
+let con;
 
-con.connect(err => {
-  if (err) throw err;
+function handleConnection() {
+  con = mysql.createConnection(dbConfig);
+  con.query = util.promisify(con.query);
 
-  console.log("connected to mysql");
-});
+  con.connect(function(err) {
+    if (err) {
+      console.log(err);
+      setTimeout(handleConnection, 1000);
+    }
+
+    console.log('connected to mysql');
+  });
+
+  con.on('error', err => {
+    console.log(err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      console.log(err);
+      handleConnection();
+    } else {
+      throw err;
+    }
+  })
+}
+
+handleConnection();
 
 const app = express();
 
