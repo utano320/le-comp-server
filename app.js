@@ -123,6 +123,34 @@ function calcRmse(first, second) {
   return [second["name"], result];
 }
 
+// 指定した資質の順位分布
+app.get("/strength", async (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+
+  // 必要なパラメータ
+  // name: 資質名
+
+  let sql = "select ";
+  let params = [];
+  for (let i = 0; i < 34; i++) {
+    // count()を作っていく
+    let num = ("0" + (i + 1)).slice(-2);
+    let c = "count(sf_" + num + " = ? or null) as cnt_" + num;
+    if (i != 33) c += ",";
+    sql += c;
+
+    params.push(req.query.name);
+  }
+  sql += " from wd_x_sf";
+
+  let result = await con.query(sql, params);
+  res.send(JSON.stringify(result));
+});
+
 // process.env.LISTEN_PORT番ポートで待機
 app.listen(process.env.LISTEN_PORT, () =>
   console.log("Listening on port " + process.env.LISTEN_PORT + " ...")
