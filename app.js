@@ -148,7 +148,11 @@ app.get("/strength", async (req, res) => {
   sql += " from wd_x_sf";
 
   let result = await con.query(sql, params);
-  res.send(JSON.stringify(result));
+  let strengthCount = []
+  Object.keys(result[0]).forEach(function(key) {
+    strengthCount.push(result[0][key]);
+  });
+  res.send(JSON.stringify({ count: strengthCount}));
 });
 
 // process.env.LISTEN_PORT番ポートで待機
